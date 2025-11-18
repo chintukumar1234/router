@@ -4,7 +4,8 @@ set -e
 MAP_URL="https://drive.google.com/uc?export=download&id=1Tr-eJ9iwPodGC_Hx-z0LVa3gBDNf7cj5"
 
 echo "📥 Downloading map..."
-curl -L -o eastern-zone-251111.osm.pbf "$MAP_URL"
+# Use wget instead of curl
+wget --no-check-certificate -O eastern-zone-251111.osm.pbf "$MAP_URL"
 
 echo "🔧 Running osrm-extract..."
 osrm-extract -p /opt/car.lua eastern-zone-251111.osm.pbf

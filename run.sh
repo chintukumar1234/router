@@ -1,26 +1,16 @@
 #!/bin/bash
-set -e
 
-FILE_ID="1Tr-eJ9iwPodGC_Hx-z0LVa3gBDNf7cj5"
-OUTPUT_FILE="eastern-zone-251111.osm.pbf"
+# Path to your local PBF
+OUTPUT_FILE=/data/eastern-zone-251111.osm.pbf
 
-echo "📥 Downloading map from Google Drive..."
+# Check if file exists
+if [ ! -f "$OUTPUT_FILE" ]; then
+    echo "Error: $OUTPUT_FILE not found."
+    exit 1
+fi
 
-# Get confirmation token for large files
-CONFIRM=$(curl -sc /tmp/cookie "https://drive.google.com/uc?export=download&id=${FILE_ID}" \
-    | grep -o 'confirm=[0-9A-Za-z_]*' | head -n 1 | cut -d= -f2)
-
-# Download the file using the confirmation token
-curl -Lb /tmp/cookie "https://drive.google.com/uc?export=download&confirm=${CONFIRM}&id=${FILE_ID}" -o "$OUTPUT_FILE"
-
-echo "🔧 Running osrm-extract..."
+# Run OSRM
 osrm-extract -p /opt/car.lua "$OUTPUT_FILE"
-
-echo "📌 Running osrm-partition..."
-osrm-partition "${OUTPUT_FILE%.osm.pbf}.osrm"
-
-echo "🧠 Running osrm-customize..."
-osrm-customize "${OUTPUT_FILE%.osm.pbf}.osrm"
-
-echo "🚀 Starting OSRM server..."
-osrm-routed --algorithm mld "${OUTPUT_FILE%.osm.pbf}.osrm"
+osrm-partition "$OUTPUT_FILE"
+osrm-customize "$OUTPUT_FILE"
+osrm-routed --algorithm mld "$OUTPUT_FILE"
